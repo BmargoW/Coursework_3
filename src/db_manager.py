@@ -4,32 +4,27 @@ import psycopg2
 from config import config
 
 
-
 class BDContact(ABC):
 
     @abstractmethod
-    def get_companies_and_vacancies_count(self):
+    def get_companies_and_vacancies_count(self, args):
         pass
-    def get_all_vacancies(self):
+    def get_all_vacancies(self, args):
         pass
-    def get_avg_salary(self):
+    def get_avg_salary(self, args):
         pass
-    def get_vacancies_with_higher_salary(self):
+    def get_vacancies_with_higher_salary(self, args):
         pass
 
 class DatabaseSelection(BDContact):
-    """Конструктор для подключения к БД"""
 
     def __init__(self):
-        params = config()
-        self.conn = psycopg2.connect(
-            **params
-        )
+        """Конструктор для подключения к БД"""
+        self.params = config()
 
-
-    def get_companies_and_vacancies_count(self)->str:
+    def get_companies_and_vacancies_count(self, base_name:str)->str:
         """Получает список всех компаний и количество вакансий у каждой компании из БД."""
-        conn = self.conn
+        conn = psycopg2.connect(database=base_name, **self.params)
         with conn.cursor() as cur:
             cur.execute(
                 " SELECT employer.company_name, COUNT(*) FROM employer  \
@@ -44,9 +39,9 @@ class DatabaseSelection(BDContact):
             finding += f"Наименование компании: {i[0]}, количество вакансий:{i[1]} \n"
         return finding
 
-    def get_all_vacancies(self) -> str:
+    def get_all_vacancies(self, base_name:str)->str:
         """Получает список всех вакансий с указанием названия компании из БД."""
-        conn = self.conn
+        conn = psycopg2.connect(database=base_name, **self.params)
         with conn.cursor() as cur:
             cur.execute(
                 " SELECT vacancy.vacancy_title || ' ' || employer.company_name AS vacancies, vacancy.salary,\
@@ -59,12 +54,12 @@ class DatabaseSelection(BDContact):
         finding = ""
         for i in rows:
             finding += f"Вакансия с названием компании: {i[0]}, зарплата:{i[1]} руб, \
-            ссылка на вакансию: {i[2]} \n"
+ссылка на вакансию: {i[2]} \n"
         return finding
 
-    def get_avg_salary(self) -> str:
+    def get_avg_salary(self, base_name:str)->str:
         """Получает среднюю зарплату по вакансиям из БД."""
-        conn = self.conn
+        conn = psycopg2.connect(database=base_name, **self.params)
         with conn.cursor() as cur:
             cur.execute(
                 " SELECT AVG (salary) FROM vacancy")
@@ -76,9 +71,9 @@ class DatabaseSelection(BDContact):
         finding = f"Величина средней зарплаты по вакансиям: {round(rows[0],2)} рублей"
         return finding
 
-    def get_vacancies_with_higher_salary(self) -> str:
+    def get_vacancies_with_higher_salary(self, base_name:str)->str:
         """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям из БД."""
-        conn = self.conn
+        conn = psycopg2.connect(database=base_name, **self.params)
         with conn.cursor() as cur:
             cur.execute(
                 " SELECT vacancy_title, salary FROM vacancy\
@@ -93,9 +88,9 @@ class DatabaseSelection(BDContact):
  выше среднего: {i[0]}, зарплата:{i[1]} руб \n"
         return finding
 
-    def get_vacancies_with_keyword(self, criteria: str) -> str:
+    def get_vacancies_with_keyword(self, base_name:str, criteria: str) -> str:
         """Выводит из БД информацию в консоль о вакансиях по указанному пользователем ключевому слову."""
-        conn = self.conn
+        conn = psycopg2.connect(database=base_name, **self.params)
         with conn.cursor() as cur:
             search_pattern = f'%{criteria}%'
             query = "SELECT * FROM vacancy WHERE vacancy_title LIKE %s"
@@ -107,15 +102,15 @@ class DatabaseSelection(BDContact):
         finding = ""
         for i in rows:
             finding += f" Наименование вакансии, с указанным ключевым словом: {i[1]},\
-зарплата:{i[3]} рублей, требования: {i[4]}, cсылка на вакансию: {i[5]}\n, "
+зарплата:{i[3]} рублей, требования: {i[4]}, ccылка на вакансию: {i[5]}\n, "
         return finding
 
 if __name__ == "__main__":
     launch = DatabaseSelection()
 
-    #companies_and_vacancies = launch.get_companies_and_vacancies_count()
-    #all_vacancies = launch.get_all_vacancies()
-    #avg_salary = launch.get_avg_salary()
-    #higher_salary = launch.get_vacancies_with_higher_salary()
-    #selected_vacancy = launch.get_vacancies_with_keyword("Python")
-    #print(selected_vacancy)
+    #companies_and_vacancies = launch.get_companies_and_vacancies_count("test-1")
+    #all_vacancies = launch.get_all_vacancies("test-1")
+    #avg_salary = launch.get_avg_salary("test-1")
+    #higher_salary = launch.get_vacancies_with_higher_salary("test-1")
+    selected_vacancy = launch.get_vacancies_with_keyword("test-1","Python")
+    print(selected_vacancy)
