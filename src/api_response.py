@@ -6,7 +6,7 @@ import requests
 
 def get_inf_through_api(
     address: str, filename: str
-) -> str:  # "https://api.hh.ru/vacancies", 'data.json'
+) -> str:
     """Получает инофрмацию с сайта и записывает в файл"""
     with open("../hh_vacancies.json") as f:
         hh_data = json.load(f)  # это уже объект Python
