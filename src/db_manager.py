@@ -22,14 +22,14 @@ class BDContact(ABC):
 
 
 class DBManager(BDContact):
-
+    """класс для работы с информацией Базы данных"""
     def __init__(self):
         """Конструктор для подключения к БД"""
-        self.params = config()
+        self.__params = config()
 
     def get_companies_and_vacancies_count(self, name_db: str) -> str:
         """Получает список всех компаний и количество вакансий у каждой компании из БД."""
-        conn = psycopg2.connect(database=name_db, **self.params)
+        conn = psycopg2.connect(database=name_db, **self.__params)
         with conn.cursor() as cur:
             cur.execute(" SELECT employer.company_name, COUNT(*) FROM employer  \
                   INNER JOIN vacancy ON employer.personal_id = vacancy.employee_id\
@@ -45,7 +45,7 @@ class DBManager(BDContact):
 
     def get_all_vacancies(self, name_db: str) -> str:
         """Получает список всех вакансий с указанием названия компании из БД."""
-        conn = psycopg2.connect(database=name_db, **self.params)
+        conn = psycopg2.connect(database=name_db, **self.__params)
         with conn.cursor() as cur:
             cur.execute(
                 " SELECT vacancy.vacancy_title || ' ' || employer.company_name AS vacancies, vacancy.salary,\
@@ -64,7 +64,7 @@ class DBManager(BDContact):
 
     def get_avg_salary(self, name_db: str) -> str:
         """Получает среднюю зарплату по вакансиям из БД."""
-        conn = psycopg2.connect(database=name_db, **self.params)
+        conn = psycopg2.connect(database=name_db, **self.__params)
         with conn.cursor() as cur:
             cur.execute(" SELECT AVG (salary) FROM vacancy")
             rows = cur.fetchone()
@@ -77,7 +77,7 @@ class DBManager(BDContact):
 
     def get_vacancies_with_higher_salary(self, name_db: str) -> str:
         """Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям из БД."""
-        conn = psycopg2.connect(database=name_db, **self.params)
+        conn = psycopg2.connect(database=name_db, **self.__params)
         with conn.cursor() as cur:
             cur.execute(" SELECT vacancy_title, salary FROM vacancy\
                  WHERE salary > (SELECT AVG (salary) FROM vacancy)")
@@ -93,7 +93,7 @@ class DBManager(BDContact):
 
     def get_vacancies_with_keyword(self, name_db: str, criteria: str) -> str:
         """Выводит из БД информацию в консоль о вакансиях по указанному пользователем ключевому слову."""
-        conn = psycopg2.connect(database=name_db, **self.params)
+        conn = psycopg2.connect(database=name_db, **self.__params)
         with conn.cursor() as cur:
             search_pattern = f"%{criteria}%"
             query = "SELECT * FROM vacancy WHERE vacancy_title LIKE %s"
