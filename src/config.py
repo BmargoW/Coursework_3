@@ -1,11 +1,13 @@
 from configparser import ConfigParser
+from pathlib import Path
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-def config(filename="C:/Users/Honor/PycharmProjects/Coursework_3/database.ini", section="postgresql"):
+def config(filename="database.ini", section="postgresql"):
     # create a parser
     parser = ConfigParser()
     # read config file
-    parser.read(filename)
+    parser.read(BASE_DIR / filename, encoding="utf-8")
     db = {}
     if parser.has_section(section):
         params = parser.items(section)
